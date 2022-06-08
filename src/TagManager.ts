@@ -11,4 +11,8 @@ export class TagManager {
     constructor(observers: TagObserver[]) {
         observers.map(observer => new EventHandler(observer));
     }
+
+    static init(observers: TagObserver[]) {
+        return new TagManager(observers);
+    }
 }
