@@ -29,7 +29,7 @@ export class EventHandler {
     }
 
     checkConditions(event: CustomEvent | Event, data: object) {
-        if (this.observer.condition === null) {
+        if (typeof this.observer.condition !== 'function') {
             return true;
         }
 

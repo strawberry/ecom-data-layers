@@ -19,7 +19,7 @@ class EventHandler {
         });
     }
     checkConditions(event, data) {
-        if (this.observer.condition === null) {
+        if (typeof this.observer.condition !== 'function') {
             return true;
         }
         return this.observer.condition(event, data);
