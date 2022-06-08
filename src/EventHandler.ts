@@ -14,17 +14,31 @@ export class EventHandler {
     }
 
     register(): void {
-        document.addEventListener(this.observer.listener, (event: CustomEvent) => {
-            window.dataLayer.push({
+        document.addEventListener(this.observer.listener, (event: CustomEvent | Event) => {
+            const data = {
                 event: this.observer.eventName,
-                ...this.getDataCallback()(event.detail)
-            });
+                ...this.getDataCallback()(event)
+            };
+
+            if (!this.checkConditions(event, data)) {
+                return;
+            }
+
+            window.dataLayer.push(data);
         });
+    }
+
+    checkConditions(event: CustomEvent | Event, data: object) {
+        if (this.observer.condition === null) {
+            return true;
+        }
+
+        return this.observer.condition(event, data);
     }
 
     getDataCallback(): DataTransformer {
         if (this.observer.dataSource === 'event') {
-            return data => data;
+            return (event: CustomEvent) => event.detail;
         }
 
         if (typeof this.observer.dataSource === 'function') {

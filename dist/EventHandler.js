@@ -11,12 +11,22 @@ class EventHandler {
     }
     register() {
         document.addEventListener(this.observer.listener, (event) => {
-            window.dataLayer.push(Object.assign({ event: this.observer.eventName }, this.getDataCallback()(event.detail)));
+            const data = Object.assign({ event: this.observer.eventName }, this.getDataCallback()(event));
+            if (!this.checkConditions(event, data)) {
+                return;
+            }
+            window.dataLayer.push(data);
         });
+    }
+    checkConditions(event, data) {
+        if (this.observer.condition === null) {
+            return true;
+        }
+        return this.observer.condition(event, data);
     }
     getDataCallback() {
         if (this.observer.dataSource === 'event') {
-            return data => data;
+            return (event) => event.detail;
         }
         if (typeof this.observer.dataSource === 'function') {
             return this.observer.dataSource;
