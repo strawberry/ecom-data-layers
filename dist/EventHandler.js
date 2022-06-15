@@ -8,7 +8,12 @@ class EventHandler {
     constructor(observer, debugMode) {
         this.observer = observer;
         this.debugMode = debugMode;
-        this.register();
+        if (this.observer.waitForPageLoad) {
+            document.addEventListener('DOMContentLoaded', this.register);
+        }
+        else {
+            this.register();
+        }
     }
     register() {
         const event = this.getEventName();
@@ -19,7 +24,7 @@ class EventHandler {
             this.attachListener(element, event, (event) => {
                 const data = Object.assign({ event: this.observer.eventName }, this.getDataCallback()(event));
                 if (this.debugMode) {
-                    console.info(`Event [${event}] fired`);
+                    console.info('Event fired:', event);
                     console.info('Event data:', data);
                 }
                 if (!this.checkConditions(event, data)) {

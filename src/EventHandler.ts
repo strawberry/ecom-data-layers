@@ -5,14 +5,18 @@ import {DataTransformer} from "./types/DataTransformer";
  * The EventHandler registers the listeners and handles pushing the data to the GTM data layer.
  */
 export class EventHandler {
-    private observer: TagObserver;
-    private debugMode: boolean;
+    private readonly observer: TagObserver;
+    private readonly debugMode: boolean;
 
     constructor(observer: TagObserver, debugMode: boolean) {
         this.observer = observer;
         this.debugMode = debugMode;
 
-        this.register();
+        if (this.observer.waitForPageLoad) {
+            document.addEventListener('DOMContentLoaded', this.register);
+        } else {
+            this.register();
+        }
     }
 
     register(): void {
@@ -30,7 +34,7 @@ export class EventHandler {
                 };
 
                 if (this.debugMode) {
-                    console.info(`Event [${event}] fired`);
+                    console.info('Event fired:', event);
                     console.info('Event data:', data);
                 }
 

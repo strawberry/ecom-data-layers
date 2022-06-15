@@ -21,4 +21,10 @@ export interface TagObserver {
      * the data to the data layer.
      */
     condition: null | ConditionChecker;
+
+    /**
+     * Whether or not to wait for the page to finish loading before attaching the event to the element(s).
+     * Useful for attaching events to elements that might not exist, yet.
+     */
+    waitForPageLoad: boolean;
 }
