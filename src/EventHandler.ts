@@ -49,6 +49,8 @@ export class EventHandler {
 
                 if (this.debugMode) {
                     console.info('Event check conditions passed, pushing to data layer');
+                    console.info('Final event data to be pushed:')
+                    console.table(data);
                 }
 
                 window.dataLayer.push(data);

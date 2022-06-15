@@ -24,7 +24,7 @@ class EventHandler {
                 console.info(`Attaching event [${event}] listener to element:`, element);
             }
             this.attachListener(element, event, (event) => {
-                const data = Object.assign({ event: this.observer.eventName }, this.getDataCallback()(event));
+                const data = Object.assign({ event: this.observer.eventName }, this.getData(event));
                 if (this.debugMode) {
                     console.info('Event fired:', event);
                     console.info('Event data:', data);
@@ -37,6 +37,8 @@ class EventHandler {
                 }
                 if (this.debugMode) {
                     console.info('Event check conditions passed, pushing to data layer');
+                    console.info('Final event data to be pushed:');
+                    console.table(data);
                 }
                 window.dataLayer.push(data);
                 if (typeof this.observer.after === 'function') {
@@ -88,6 +90,13 @@ class EventHandler {
             return true;
         }
         return this.observer.condition(event, data);
+    }
+    getData(event) {
+        let data = this.getDataCallback()(event);
+        if (typeof this.observer.transformData === 'function') {
+            return this.observer.transformData(data);
+        }
+        return data;
     }
     getDataCallback() {
         if (typeof this.observer.dataSource === 'object') {
