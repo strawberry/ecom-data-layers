@@ -39,6 +39,12 @@ class EventHandler {
                     console.info('Event check conditions passed, pushing to data layer');
                 }
                 window.dataLayer.push(data);
+                if (typeof this.observer.after === 'function') {
+                    if (this.debugMode) {
+                        console.info('Executing after callback');
+                    }
+                    this.observer.after();
+                }
             });
         });
     }

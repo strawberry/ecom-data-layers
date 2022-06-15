@@ -52,6 +52,14 @@ export class EventHandler {
                 }
 
                 window.dataLayer.push(data);
+
+                if (typeof this.observer.after === 'function') {
+                    if (this.debugMode) {
+                        console.info('Executing after callback');
+                    }
+
+                    this.observer.after();
+                }
             })
         });
     }

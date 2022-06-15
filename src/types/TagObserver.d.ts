@@ -27,4 +27,9 @@ export interface TagObserver {
      * Useful for attaching events to elements that might not exist, yet.
      */
     waitForPageLoad: boolean;
+
+    /**
+     * A callback to execute after the tag has been pushed to the data layer.
+     */
+    after: CallableFunction;
 }
