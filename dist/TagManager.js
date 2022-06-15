@@ -9,6 +9,9 @@ class TagManager {
     static init(observers) {
         return new TagManager(observers);
     }
+    debug(debug = true) {
+        this.debugMode = debug;
+    }
 }
 exports.TagManager = TagManager;
 //# sourceMappingURL=TagManager.js.map

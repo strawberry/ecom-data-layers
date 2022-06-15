@@ -10,13 +10,36 @@ class EventHandler {
         this.register();
     }
     register() {
-        document.addEventListener(this.observer.listener, (event) => {
-            const data = Object.assign({ event: this.observer.eventName }, this.getDataCallback()(event));
-            if (!this.checkConditions(event, data)) {
-                return;
-            }
-            window.dataLayer.push(data);
+        const event = this.getEventName();
+        this.getListenableElements().forEach(element => {
+            this.attachListener(element, event, (event) => {
+                const data = Object.assign({ event: this.observer.eventName }, this.getDataCallback()(event));
+                if (!this.checkConditions(event, data)) {
+                    return;
+                }
+                window.dataLayer.push(data);
+            });
         });
+    }
+    getListenableElements() {
+        if (typeof this.observer.listener === 'object') {
+            if (typeof this.observer.listener.element === 'string') {
+                return [...document.querySelectorAll(this.observer.listener.element)];
+            }
+            if (this.observer.listener.element instanceof Element) {
+                return [this.observer.listener.element];
+            }
+        }
+        return [document];
+    }
+    getEventName() {
+        if (typeof this.observer.listener === 'object') {
+            return this.observer.listener.event;
+        }
+        return this.observer.listener;
+    }
+    attachListener(element, event, callback) {
+        element.addEventListener(event, callback);
     }
     checkConditions(event, data) {
         if (typeof this.observer.condition !== 'function') {
@@ -25,6 +48,9 @@ class EventHandler {
         return this.observer.condition(event, data);
     }
     getDataCallback() {
+        if (typeof this.observer.dataSource === 'object') {
+            return () => this.observer.dataSource;
+        }
         if (this.observer.dataSource === 'event') {
             return (event) => event.detail;
         }

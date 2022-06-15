@@ -1,6 +1,7 @@
 import {DataTransformer} from "./DataTransformer";
 import {ConditionChecker} from "./ConditionChecker";
 import {ListenerDefinition} from "./ListenerDefinition";
+import {StaticDataObject} from "./StaticDataObject";
 
 export interface TagObserver {
     /* The name of the event to be pushed to the data layer. */
@@ -13,7 +14,7 @@ export interface TagObserver {
      * The source of the data to be pushed to the data layer.
      * Can be "event", a CSS selector string, or a DataTransformer callback.
      */
-    dataSource: "event" | string | DataTransformer;
+    dataSource: "event" | string | DataTransformer | StaticDataObject;
 
     /**
      * A conditional statement that, if it returns falsey, will not push

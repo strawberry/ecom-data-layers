@@ -66,7 +66,11 @@ export class EventHandler {
         return this.observer.condition(event, data);
     }
 
-    getDataCallback(): DataTransformer {
+    getDataCallback(): DataTransformer | Function {
+        if (typeof this.observer.dataSource === 'object') {
+            return () => this.observer.dataSource;
+        }
+
         if (this.observer.dataSource === 'event') {
             return (event: CustomEvent) => event.detail;
         }
