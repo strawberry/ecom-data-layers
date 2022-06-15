@@ -32,7 +32,7 @@ export class EventHandler {
             this.attachListener(element, event, (event: CustomEvent | Event) => {
                 const data = {
                     event: this.observer.eventName,
-                    ...this.getDataCallback()(event)
+                    ...this.getData(event)
                 };
 
                 if (this.debugMode) {
@@ -116,6 +116,16 @@ export class EventHandler {
         }
 
         return this.observer.condition(event, data);
+    }
+
+    getData(event: CustomEvent | Event): object {
+        let data = this.getDataCallback()(event);
+
+        if (typeof this.observer.transformData === 'function') {
+            return this.observer.transformData(data);
+        }
+
+        return data;
     }
 
     getDataCallback(): DataTransformer | Function {

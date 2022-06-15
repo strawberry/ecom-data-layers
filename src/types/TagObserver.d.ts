@@ -17,6 +17,11 @@ export interface TagObserver {
     dataSource: "event" | string | DataTransformer | StaticDataObject;
 
     /**
+     * A secondary way of transforming the data after it's been parsed from an element on the page.
+     */
+    transformData: DataTransformer;
+
+    /**
      * A conditional statement that, if it returns falsey, will not push
      * the data to the data layer.
      */
