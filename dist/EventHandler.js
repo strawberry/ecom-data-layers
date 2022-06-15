@@ -5,17 +5,31 @@ exports.EventHandler = void 0;
  * The EventHandler registers the listeners and handles pushing the data to the GTM data layer.
  */
 class EventHandler {
-    constructor(observer) {
+    constructor(observer, debugMode) {
         this.observer = observer;
+        this.debugMode = debugMode;
         this.register();
     }
     register() {
         const event = this.getEventName();
         this.getListenableElements().forEach(element => {
+            if (this.debugMode) {
+                console.info(`Attaching event [${event}] listener to element:`, element);
+            }
             this.attachListener(element, event, (event) => {
                 const data = Object.assign({ event: this.observer.eventName }, this.getDataCallback()(event));
+                if (this.debugMode) {
+                    console.info(`Event [${event}] fired`);
+                    console.info('Event data:', data);
+                }
                 if (!this.checkConditions(event, data)) {
+                    if (this.debugMode) {
+                        console.warn('Event check conditions failed');
+                    }
                     return;
+                }
+                if (this.debugMode) {
+                    console.info('Event check conditions passed, pushing to data layer');
                 }
                 window.dataLayer.push(data);
             });
@@ -23,10 +37,19 @@ class EventHandler {
     }
     getListenableElements() {
         if (typeof this.observer.listener === 'object') {
+            if (this.debugMode) {
+                console.info('Observer listener is an object:', this.observer.listener);
+            }
             if (typeof this.observer.listener.element === 'string') {
+                if (this.debugMode) {
+                    console.info(`Observer listener element is a selector [${this.observer.listener.element}]`);
+                }
                 return [...document.querySelectorAll(this.observer.listener.element)];
             }
             if (this.observer.listener.element instanceof Element) {
+                if (this.debugMode) {
+                    console.info('Observer listener element is an Element:', this.observer.listener.element);
+                }
                 return [this.observer.listener.element];
             }
         }
@@ -34,7 +57,13 @@ class EventHandler {
     }
     getEventName() {
         if (typeof this.observer.listener === 'object') {
+            if (this.debugMode) {
+                console.info(`Got event name from ListenerDefinition object: [${this.observer.listener.event}]`);
+            }
             return this.observer.listener.event;
+        }
+        if (this.debugMode) {
+            console.info(`Got event name: [${this.observer.listener}]`);
         }
         return this.observer.listener;
     }
