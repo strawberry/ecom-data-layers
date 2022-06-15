@@ -18,13 +18,24 @@ class EventHandler {
         }
     }
     register() {
+        if (!this.validateDataSource()) {
+            if (this.observer.strictDataSource !== 'silent') {
+                console.warn('Strict dataSource checking failed. Data source is:', this.observer.dataSource);
+            }
+            return;
+        }
         const event = this.getEventName();
         this.getListenableElements().forEach(element => {
             if (this.debugMode) {
                 console.info(`Attaching event [${event}] listener to element:`, element);
             }
             this.attachListener(element, event, (event) => {
-                const data = Object.assign({ event: this.observer.eventName }, this.getData(event));
+                const dataAfterTransformations = this.getData(event);
+                if (dataAfterTransformations === null) {
+                    console.warn('Final data set was null – aborting.');
+                    return false;
+                }
+                const data = Object.assign({ event: this.observer.eventName }, dataAfterTransformations);
                 if (this.debugMode) {
                     console.info('Event fired:', event);
                     console.info('Event data:', data);
@@ -109,7 +120,22 @@ class EventHandler {
             return this.observer.dataSource;
         }
         const element = document.querySelector(this.observer.dataSource.toString());
-        return () => JSON.parse((element === null || element === void 0 ? void 0 : element.innerText) || '{}');
+        return () => JSON.parse((element === null || element === void 0 ? void 0 : element.innerText) || 'null');
+    }
+    validateDataSource() {
+        if (!this.observer.strictDataSource) {
+            return true;
+        }
+        if (this.observer.dataSource === 'event' || typeof this.observer.dataSource === 'function') {
+            return true;
+        }
+        if (typeof this.observer.dataSource === 'string') {
+            return [...document.querySelectorAll(this.observer.dataSource)].length > 0;
+        }
+        if (typeof this.observer.dataSource === 'object') {
+            return Object.keys(this.observer.dataSource).length > 0;
+        }
+        return false;
     }
 }
 exports.EventHandler = EventHandler;

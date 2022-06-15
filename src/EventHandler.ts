@@ -22,6 +22,14 @@ export class EventHandler {
     }
 
     register(): void {
+        if (!this.validateDataSource()) {
+            if (this.observer.strictDataSource !== 'silent') {
+                console.warn('Strict dataSource checking failed. Data source is:', this.observer.dataSource);
+            }
+
+            return;
+        }
+
         const event = this.getEventName();
 
         this.getListenableElements().forEach(element => {
@@ -30,9 +38,17 @@ export class EventHandler {
             }
 
             this.attachListener(element, event, (event: CustomEvent | Event) => {
+                const dataAfterTransformations = this.getData(event);
+
+                if (dataAfterTransformations === null) {
+                    console.warn('Final data set was null – aborting.');
+
+                    return false;
+                }
+
                 const data = {
                     event: this.observer.eventName,
-                    ...this.getData(event)
+                    ...dataAfterTransformations
                 };
 
                 if (this.debugMode) {
@@ -120,7 +136,7 @@ export class EventHandler {
         return this.observer.condition(event, data);
     }
 
-    getData(event: CustomEvent | Event): object {
+    getData(event: CustomEvent | Event): object | null {
         let data = this.getDataCallback()(event);
 
         if (typeof this.observer.transformData === 'function') {
@@ -145,6 +161,26 @@ export class EventHandler {
 
         const element = document.querySelector(this.observer.dataSource.toString()) as HTMLElement | null;
 
-        return () => JSON.parse(element?.innerText || '{}');
+        return () => JSON.parse(element?.innerText || 'null');
+    }
+
+    validateDataSource(): boolean {
+        if (!this.observer.strictDataSource) {
+            return true;
+        }
+
+        if (this.observer.dataSource === 'event' || typeof this.observer.dataSource === 'function') {
+            return true;
+        }
+
+        if (typeof this.observer.dataSource === 'string') {
+            return [...document.querySelectorAll(this.observer.dataSource)].length > 0;
+        }
+
+        if (typeof this.observer.dataSource === 'object') {
+            return Object.keys(this.observer.dataSource).length > 0;
+        }
+
+        return false;
     }
 }
