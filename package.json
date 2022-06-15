@@ -1,6 +1,6 @@
 {
   "name": "@strawberrydigital/ecom-data-layers",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "A library for implementing event-driven GTM data layers with a focus on ecommerce projects.",
   "scripts": {
     "build": "rimraf dist && node_modules/typescript/bin/tsc",

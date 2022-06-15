@@ -17,6 +17,17 @@ export interface TagObserver {
     dataSource: "event" | string | DataTransformer | StaticDataObject;
 
     /**
+     * Require the data source to be present and valid before registering the listener.
+     *
+     * - When the dataSource is a string, the observer checks for the element's (or elements') existence on the page.
+     * - When the dataSource is a StaticDataObject, it checks that the object is not empty.
+     * - When the dataSource is 'event' or a DataTransformer, this is ignored.
+     *
+     * If this option is 'silent' (as opposed to true), then this is treated as truthy but not reported when the strict check fails.
+     */
+    strictDataSource: boolean | 'silent';
+
+    /**
      * A secondary way of transforming the data after it's been parsed from an element on the page.
      */
     transformData: DataTransformer;
