@@ -14,18 +14,48 @@ export class EventHandler {
     }
 
     register(): void {
-        document.addEventListener(this.observer.listener, (event: CustomEvent | Event) => {
-            const data = {
-                event: this.observer.eventName,
-                ...this.getDataCallback()(event)
-            };
+        const event = this.getEventName();
 
-            if (!this.checkConditions(event, data)) {
-                return;
+        this.getListenableElements().forEach(element => {
+            this.attachListener(element, event, (event: CustomEvent | Event) => {
+                const data = {
+                    event: this.observer.eventName,
+                    ...this.getDataCallback()(event)
+                };
+
+                if (!this.checkConditions(event, data)) {
+                    return;
+                }
+
+                window.dataLayer.push(data);
+            })
+        });
+    }
+
+    getListenableElements(): Element[] | Document[] {
+        if (typeof this.observer.listener === 'object') {
+            if (typeof this.observer.listener.element === 'string') {
+                return [...document.querySelectorAll(this.observer.listener.element)];
             }
 
-            window.dataLayer.push(data);
-        });
+            if (this.observer.listener.element instanceof Element) {
+                return [this.observer.listener.element];
+            }
+        }
+
+        return [document];
+    }
+
+    getEventName(): string {
+        if (typeof this.observer.listener === 'object') {
+            return this.observer.listener.event;
+        }
+
+        return this.observer.listener;
+    }
+
+    attachListener(element: Element | Document, event: string, callback: EventListenerOrEventListenerObject) {
+        element.addEventListener(event, callback);
     }
 
     checkConditions(event: CustomEvent | Event, data: object) {
