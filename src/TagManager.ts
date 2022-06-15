@@ -11,7 +11,7 @@ export class TagManager {
     private debugMode: boolean;
 
     constructor(observers: TagObserver[]) {
-        observers.map(observer => new EventHandler(observer));
+        observers.map(observer => new EventHandler(observer, this.debugMode));
     }
 
     static init(observers: TagObserver[]) {
