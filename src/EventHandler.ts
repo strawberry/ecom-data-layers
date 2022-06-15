@@ -13,7 +13,9 @@ export class EventHandler {
         this.debugMode = debugMode;
 
         if (this.observer.waitForPageLoad) {
-            document.addEventListener('DOMContentLoaded', this.register);
+            document.addEventListener('DOMContentLoaded', () => {
+                this.register()
+            });
         } else {
             this.register();
         }
