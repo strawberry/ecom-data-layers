@@ -22,6 +22,7 @@ class EventHandler {
             if (this.observer.strictDataSource !== 'silent') {
                 console.warn('Strict dataSource checking failed. Data source is:', this.observer.dataSource);
             }
+            this.runAlwaysCallback();
             return;
         }
         const event = this.getEventName();
@@ -44,6 +45,7 @@ class EventHandler {
                     if (this.debugMode) {
                         console.warn('Event check conditions failed');
                     }
+                    this.runAlwaysCallback();
                     return;
                 }
                 if (this.debugMode) {
@@ -52,12 +54,8 @@ class EventHandler {
                     console.table(data);
                 }
                 window.dataLayer.push(data);
-                if (typeof this.observer.after === 'function') {
-                    if (this.debugMode) {
-                        console.info('Executing after callback');
-                    }
-                    this.observer.after();
-                }
+                this.runAfterCallback();
+                this.runAlwaysCallback();
             });
         });
     }
@@ -136,6 +134,24 @@ class EventHandler {
             return Object.keys(this.observer.dataSource).length > 0;
         }
         return false;
+    }
+    runAfterCallback() {
+        if (typeof this.observer.after !== 'function') {
+            return;
+        }
+        if (this.debugMode) {
+            console.info('Executing `after` callback');
+        }
+        this.observer.after();
+    }
+    runAlwaysCallback() {
+        if (typeof this.observer.always !== 'function') {
+            return;
+        }
+        if (this.debugMode) {
+            console.info('Executing `always` callback');
+        }
+        this.observer.always();
     }
 }
 exports.EventHandler = EventHandler;

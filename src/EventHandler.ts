@@ -27,6 +27,8 @@ export class EventHandler {
                 console.warn('Strict dataSource checking failed. Data source is:', this.observer.dataSource);
             }
 
+            this.runAlwaysCallback();
+
             return;
         }
 
@@ -60,6 +62,9 @@ export class EventHandler {
                     if (this.debugMode) {
                         console.warn('Event check conditions failed');
                     }
+
+                    this.runAlwaysCallback();
+
                     return;
                 }
 
@@ -71,13 +76,9 @@ export class EventHandler {
 
                 window.dataLayer.push(data);
 
-                if (typeof this.observer.after === 'function') {
-                    if (this.debugMode) {
-                        console.info('Executing after callback');
-                    }
+                this.runAfterCallback();
 
-                    this.observer.after();
-                }
+                this.runAlwaysCallback();
             })
         });
     }
@@ -182,5 +183,29 @@ export class EventHandler {
         }
 
         return false;
+    }
+
+    runAfterCallback(): void {
+        if (typeof this.observer.after !== 'function') {
+            return;
+        }
+
+        if (this.debugMode) {
+            console.info('Executing `after` callback');
+        }
+
+        this.observer.after();
+    }
+
+    runAlwaysCallback(): void {
+        if (typeof this.observer.always !== 'function') {
+            return;
+        }
+
+        if (this.debugMode) {
+            console.info('Executing `always` callback');
+        }
+
+        this.observer.always();
     }
 }
