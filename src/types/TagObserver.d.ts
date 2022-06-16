@@ -48,4 +48,14 @@ export interface TagObserver {
      * A callback to execute after the tag has been pushed to the data layer.
      */
     after: CallableFunction;
+
+    /**
+     * A callback that always executes; _when_ it executes depends on the success of the event handler's registration.
+     *
+     * It will only execute once, either:
+     * - after strict data source validation fails (and the listener is never registered)
+     * - after the conditions check fails (and the data is never pushed) or
+     * - after the after() callback following the push to the data layer
+     */
+    always: CallableFunction
 }
