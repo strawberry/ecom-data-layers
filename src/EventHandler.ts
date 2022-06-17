@@ -10,7 +10,7 @@ export class EventHandler {
 
     constructor(observer: TagObserver, debugMode: boolean) {
         this.observer = observer;
-        this.debugMode = debugMode;
+        this.debugMode = debugMode || this.observer.debugMode;
 
         if (this.observer.waitForPageLoad) {
             document.addEventListener('DOMContentLoaded', () => {

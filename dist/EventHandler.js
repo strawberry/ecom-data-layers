@@ -7,7 +7,7 @@ exports.EventHandler = void 0;
 class EventHandler {
     constructor(observer, debugMode) {
         this.observer = observer;
-        this.debugMode = debugMode;
+        this.debugMode = debugMode || this.observer.debugMode;
         if (this.observer.waitForPageLoad) {
             document.addEventListener('DOMContentLoaded', () => {
                 this.register();

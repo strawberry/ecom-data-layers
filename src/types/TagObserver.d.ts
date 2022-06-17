@@ -57,5 +57,10 @@ export interface TagObserver {
      * - after the conditions check fails (and the data is never pushed) or
      * - after the after() callback following the push to the data layer
      */
-    always: CallableFunction
+    always: CallableFunction,
+
+    /**
+     * Allows you to turn on debugMode for individual observers.
+     */
+    debugMode: boolean;
 }
