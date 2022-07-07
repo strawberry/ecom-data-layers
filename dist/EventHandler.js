@@ -51,20 +51,8 @@ class EventHandler {
             typeof this.observer.listener.element === 'string' &&
             event.target !== null &&
             event.target instanceof Element) {
-            this.debug('Trying to delegate...');
-            const selector = this.observer.listener.element;
-            this.debug('selector', selector, 'event.target', event.target, 'event.target.classList', event.target.classList, 'event.target.id', event.target.id, 'event.target.attributes', event.target.attributes);
-            switch (this.observer.listener.delegate.type) {
-                case 'classname':
-                    this.debug(`Delegated event by classname [${selector}]`);
-                    return event.target.classList.contains(selector);
-                case 'id':
-                    this.debug(`Delegated event by id [${selector}]`);
-                    return event.target.id === selector;
-                case 'dataAttribute':
-                    this.debug(`Delegated event by dataAttribute [${selector}]`);
-                    return event.target.hasAttribute(selector.replace('[', '').replace(']', ''));
-            }
+            this.debug('Checking if event.target matches selector', event.target, this.observer.listener.element);
+            return event.target.matches(this.observer.listener.element);
         }
         this.debug('Delegated event NOT executed.');
         return false;
