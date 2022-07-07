@@ -51,9 +51,7 @@ export class EventHandler {
         this.getListenableElements().forEach(element => {
             this.debug(`Attaching event [${event}] listener to element:`, element);
 
-            this.attachListener(element, event, (event: CustomEvent | Event) => () => {
-                this.eventListenerBody(event)
-            });
+            this.attachListener(element, event, (event: CustomEvent | Event) => this.eventListenerBody(event));
         });
     }
 
