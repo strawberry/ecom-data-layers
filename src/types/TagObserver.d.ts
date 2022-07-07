@@ -45,6 +45,11 @@ export interface TagObserver {
     waitForPageLoad: boolean;
 
     /**
+     * A callback to execute before the tag has been pushed to the data layer.
+     */
+    before: CallableFunction;
+
+    /**
      * A callback to execute after the tag has been pushed to the data layer.
      */
     after: CallableFunction;

@@ -53,6 +53,8 @@ class EventHandler {
                     console.info('Final event data to be pushed:');
                     console.table(data);
                 }
+                // @todo Can we make these before/after callbacks Promises?
+                this.runBeforeCallback();
                 window.dataLayer.push(data);
                 this.runAfterCallback();
                 this.runAlwaysCallback();
@@ -134,6 +136,15 @@ class EventHandler {
             return Object.keys(this.observer.dataSource).length > 0;
         }
         return false;
+    }
+    runBeforeCallback() {
+        if (typeof this.observer.before !== 'function') {
+            return;
+        }
+        if (this.debugMode) {
+            console.info('Executing `before` callback');
+        }
+        this.observer.before();
     }
     runAfterCallback() {
         if (typeof this.observer.after !== 'function') {
