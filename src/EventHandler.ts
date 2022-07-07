@@ -34,56 +34,90 @@ export class EventHandler {
 
         const event = this.getEventName();
 
+        if (typeof this.observer.listener === 'object' && this.observer.listener.delegate) {
+            this.attachListener(document, event, (e: CustomEvent | Event) => {
+                if (this.shouldExecuteDelegatedEvent(e)) {
+                    this.eventListenerBody(e);
+                }
+            });
+        }
+
         this.getListenableElements().forEach(element => {
             if (this.debugMode) {
                 console.info(`Attaching event [${event}] listener to element:`, element);
             }
 
-            this.attachListener(element, event, (event: CustomEvent | Event) => {
-                const dataAfterTransformations = this.getData(event);
-
-                if (dataAfterTransformations === null) {
-                    console.warn('Final data set was null – aborting.');
-
-                    return false;
-                }
-
-                const data = {
-                    event: this.observer.eventName,
-                    ...dataAfterTransformations
-                };
-
-                if (this.debugMode) {
-                    console.info('Event fired:', event);
-                    console.info('Event data:', data);
-                }
-
-                if (!this.checkConditions(event, data)) {
-                    if (this.debugMode) {
-                        console.warn('Event check conditions failed');
-                    }
-
-                    this.runAlwaysCallback();
-
-                    return;
-                }
-
-                if (this.debugMode) {
-                    console.info('Event check conditions passed, pushing to data layer');
-                    console.info('Final event data to be pushed:')
-                    console.table(data);
-                }
-
-                // @todo Can we make these before/after callbacks Promises?
-                this.runBeforeCallback();
-
-                window.dataLayer.push(data);
-
-                this.runAfterCallback();
-
-                this.runAlwaysCallback();
-            })
+            this.attachListener(element, event, (event: CustomEvent | Event) => () => {
+                this.eventListenerBody(event)
+            });
         });
+    }
+
+    shouldExecuteDelegatedEvent(event: CustomEvent | Event): Boolean {
+        if (
+            typeof this.observer.listener === 'object' &&
+            typeof this.observer.listener.element === 'string' &&
+            event.target !== null &&
+            event.target instanceof Element
+        ) {
+            const selector = this.observer.listener.element;
+
+            switch (this.observer.listener.delegate.type) {
+                case 'classname':
+                    return event.target.classList.contains(selector);
+                case 'id':
+                    return event.target.id === selector;
+                case 'dataAttribute':
+                    return event.target.hasAttribute(selector.replace('[', '').replace(']', ''));
+            }
+        }
+
+        return false;
+    }
+
+    eventListenerBody(event: CustomEvent | Event) {
+        const dataAfterTransformations = this.getData(event);
+
+        if (dataAfterTransformations === null) {
+            console.warn('Final data set was null – aborting.');
+
+            return false;
+        }
+
+        const data = {
+            event: this.observer.eventName,
+            ...dataAfterTransformations
+        };
+
+        if (this.debugMode) {
+            console.info('Event fired:', event);
+            console.info('Event data:', data);
+        }
+
+        if (!this.checkConditions(event, data)) {
+            if (this.debugMode) {
+                console.warn('Event check conditions failed');
+            }
+
+            this.runAlwaysCallback();
+
+            return;
+        }
+
+        if (this.debugMode) {
+            console.info('Event check conditions passed, pushing to data layer');
+            console.info('Final event data to be pushed:')
+            console.table(data);
+        }
+
+        // @todo Can we make these before/after callbacks Promises?
+        this.runBeforeCallback();
+
+        window.dataLayer.push(data);
+
+        this.runAfterCallback();
+
+        this.runAlwaysCallback();
     }
 
     getListenableElements(): Element[] | Document[] {
