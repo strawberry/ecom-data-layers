@@ -49,9 +49,7 @@ export class EventHandler {
         }
 
         this.getListenableElements().forEach(element => {
-            if (this.debugMode) {
-                console.info(`Attaching event [${event}] listener to element:`, element);
-            }
+            this.debug(`Attaching event [${event}] listener to element:`, element);
 
             this.attachListener(element, event, (event: CustomEvent | Event) => () => {
                 this.eventListenerBody(event)
@@ -94,26 +92,17 @@ export class EventHandler {
             ...dataAfterTransformations
         };
 
-        if (this.debugMode) {
-            console.info('Event fired:', event);
-            console.info('Event data:', data);
-        }
+        this.debug('Event fired:', event, 'Event data:', data);
 
         if (!this.checkConditions(event, data)) {
-            if (this.debugMode) {
-                console.warn('Event check conditions failed');
-            }
+            this.debug('Event check conditions failed');
 
             this.runAlwaysCallback();
 
             return;
         }
 
-        if (this.debugMode) {
-            console.info('Event check conditions passed, pushing to data layer');
-            console.info('Final event data to be pushed:')
-            console.table(data);
-        }
+        this.debug('Event check conditions passed, pushing to data layer', 'Final event data to be pushed:', data);
 
         // @todo Can we make these before/after callbacks Promises?
         this.runBeforeCallback();
@@ -127,22 +116,16 @@ export class EventHandler {
 
     getListenableElements(): Element[] | Document[] {
         if (typeof this.observer.listener === 'object') {
-            if (this.debugMode) {
-                console.info('Observer listener is an object:', this.observer.listener);
-            }
+            this.debug('Observer listener is an object:', this.observer.listener);
 
             if (typeof this.observer.listener.element === 'string') {
-                if (this.debugMode) {
-                    console.info(`Observer listener element is a selector [${this.observer.listener.element}]`);
-                }
+                this.debug(`Observer listener element is a selector [${this.observer.listener.element}]`);
 
                 return [...document.querySelectorAll(this.observer.listener.element)];
             }
 
             if (this.observer.listener.element instanceof Element) {
-                if (this.debugMode) {
-                    console.info('Observer listener element is an Element:', this.observer.listener.element);
-                }
+                this.debug('Observer listener element is an Element:', this.observer.listener.element);
 
                 return [this.observer.listener.element];
             }
@@ -153,16 +136,12 @@ export class EventHandler {
 
     getEventName(): string {
         if (typeof this.observer.listener === 'object') {
-            if (this.debugMode) {
-                console.info(`Got event name from ListenerDefinition object: [${this.observer.listener.event}]`);
-            }
+            this.debug(`Got event name from ListenerDefinition object: [${this.observer.listener.event}]`);
 
             return this.observer.listener.event;
         }
 
-        if (this.debugMode) {
-            console.info(`Got event name: [${this.observer.listener}]`);
-        }
+        this.debug(`Got event name: [${this.observer.listener}]`);
 
         return this.observer.listener;
     }
@@ -190,75 +169,101 @@ export class EventHandler {
     }
 
     getDataCallback(): DataTransformer | Function {
+        this.debug('Getting data');
+
         if (typeof this.observer.dataSource === 'object') {
+            this.debug('Data source is object, returning', this.observer.dataSource);
+
             return () => this.observer.dataSource;
         }
 
         if (this.observer.dataSource === 'event') {
+            this.debug('Data source is event, returning the event detail');
+
             return (event: CustomEvent) => event.detail;
         }
 
         if (typeof this.observer.dataSource === 'function') {
+            this.debug('Data source is function, returning callback');
+
             return this.observer.dataSource;
         }
 
         const element = document.querySelector(this.observer.dataSource.toString()) as HTMLElement | null;
 
+        this.debug('Data source is an element, parsing element:', element);
+
         return () => JSON.parse(element?.innerText || 'null');
     }
 
     validateDataSource(): boolean {
+        this.debug('Validating data source');
+
         if (!this.observer.strictDataSource) {
+            this.debug('Data source validated: validation is not strict; auto-approving.');
+
             return true;
         }
 
         if (this.observer.dataSource === 'event' || typeof this.observer.dataSource === 'function') {
+            this.debug('Data source validated: data source is an event or a callback.');
+
             return true;
         }
 
         if (typeof this.observer.dataSource === 'string') {
-            return [...document.querySelectorAll(this.observer.dataSource)].length > 0;
+            const length = [...document.querySelectorAll(this.observer.dataSource)].length;
+
+            this.debug(`Data source validating from element: checking ${length} > 0`);
+
+            return length > 0;
         }
 
         if (typeof this.observer.dataSource === 'object') {
-            return Object.keys(this.observer.dataSource).length > 0;
+            const length = Object.keys(this.observer.dataSource).length;
+
+            this.debug(`Data source validating from object: checking ${length} > 0`);
+
+            return length > 0;
         }
+
+        this.debug('Data source could not be validated; failing validation.');
 
         return false;
     }
 
     runBeforeCallback(): void {
         if (typeof this.observer.before !== 'function') {
+            this.debug('No `before` callback registered; skipping.');
+
             return;
         }
 
-        if (this.debugMode) {
-            console.info('Executing `before` callback');
-        }
+        this.debug('Executing `before` callback');
 
         this.observer.before();
     }
 
     runAfterCallback(): void {
         if (typeof this.observer.after !== 'function') {
+            this.debug('No `after` callback registered; skipping.');
+
             return;
         }
 
-        if (this.debugMode) {
-            console.info('Executing `after` callback');
-        }
+        this.debug('Executing `after` callback');
 
         this.observer.after();
     }
 
     runAlwaysCallback(): void {
         if (typeof this.observer.always !== 'function') {
+            this.debug('No `always` callback registered; skipping.');
+
             return;
         }
 
-        if (this.debugMode) {
-            console.info('Executing `always` callback');
-        }
+        this.debug('Executing `always` callback');
 
         this.observer.always();
     }
