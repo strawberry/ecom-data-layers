@@ -22,6 +22,8 @@ export class EventHandler {
     }
 
     register(): void {
+        this.debug('Registering event handler', this);
+
         if (!this.validateDataSource()) {
             if (this.observer.strictDataSource !== 'silent') {
                 console.warn('Strict dataSource checking failed. Data source is:', this.observer.dataSource);
@@ -35,11 +37,15 @@ export class EventHandler {
         const event = this.getEventName();
 
         if (typeof this.observer.listener === 'object' && this.observer.listener.delegate) {
+            this.debug(`Preparing delegated listener on [document] for [${event}] event`);
+
             this.attachListener(document, event, (e: CustomEvent | Event) => {
                 if (this.shouldExecuteDelegatedEvent(e)) {
                     this.eventListenerBody(e);
                 }
             });
+
+            return;
         }
 
         this.getListenableElements().forEach(element => {
@@ -98,6 +104,8 @@ export class EventHandler {
     }
 
     eventListenerBody(event: CustomEvent | Event) {
+        this.debug('Event fired, executing event listener body', event);
+
         const dataAfterTransformations = this.getData(event);
 
         if (dataAfterTransformations === null) {

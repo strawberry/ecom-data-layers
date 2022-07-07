@@ -18,6 +18,7 @@ class EventHandler {
         }
     }
     register() {
+        this.debug('Registering event handler', this);
         if (!this.validateDataSource()) {
             if (this.observer.strictDataSource !== 'silent') {
                 console.warn('Strict dataSource checking failed. Data source is:', this.observer.dataSource);
@@ -27,11 +28,13 @@ class EventHandler {
         }
         const event = this.getEventName();
         if (typeof this.observer.listener === 'object' && this.observer.listener.delegate) {
+            this.debug(`Preparing delegated listener on [document] for [${event}] event`);
             this.attachListener(document, event, (e) => {
                 if (this.shouldExecuteDelegatedEvent(e)) {
                     this.eventListenerBody(e);
                 }
             });
+            return;
         }
         this.getListenableElements().forEach(element => {
             if (this.debugMode) {
@@ -43,23 +46,31 @@ class EventHandler {
         });
     }
     shouldExecuteDelegatedEvent(event) {
+        this.debug('Checking if to execute delegated event');
         if (typeof this.observer.listener === 'object' &&
             typeof this.observer.listener.element === 'string' &&
             event.target !== null &&
             event.target instanceof Element) {
+            this.debug('Trying to delegate...');
             const selector = this.observer.listener.element;
+            this.debug('selector', selector, 'event.target', event.target, 'event.target.classList', event.target.classList, 'event.target.id', event.target.id, 'event.target.attributes', event.target.attributes);
             switch (this.observer.listener.delegate.type) {
                 case 'classname':
+                    this.debug(`Delegated event by classname [${selector}]`);
                     return event.target.classList.contains(selector);
                 case 'id':
+                    this.debug(`Delegated event by id [${selector}]`);
                     return event.target.id === selector;
                 case 'dataAttribute':
+                    this.debug(`Delegated event by dataAttribute [${selector}]`);
                     return event.target.hasAttribute(selector.replace('[', '').replace(']', ''));
             }
         }
+        this.debug('Delegated event NOT executed.');
         return false;
     }
     eventListenerBody(event) {
+        this.debug('Event fired, executing event listener body', event);
         const dataAfterTransformations = this.getData(event);
         if (dataAfterTransformations === null) {
             console.warn('Final data set was null – aborting.');
@@ -190,6 +201,11 @@ class EventHandler {
             console.info('Executing `always` callback');
         }
         this.observer.always();
+    }
+    debug(...args) {
+        if (this.debugMode) {
+            console.info(...args);
+        }
     }
 }
 exports.EventHandler = EventHandler;
